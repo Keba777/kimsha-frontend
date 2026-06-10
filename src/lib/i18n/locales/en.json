@@ -1,0 +1,50 @@
+{
+  "app": { "name": "Kimsha", "tagline": "Your restaurant, fully in order" },
+  "nav": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "tables": "Tables",
+    "menu": "Menu",
+    "reports": "Reports",
+    "staff": "Staff",
+    "cash": "Cash",
+    "settings": "Settings"
+  },
+  "order": {
+    "new": "New Order",
+    "open": "Open",
+    "in_kitchen": "In Kitchen",
+    "ready": "Ready",
+    "served": "Served",
+    "paid": "Paid",
+    "cancelled": "Cancelled",
+    "send_to_kitchen": "Send to Kitchen",
+    "dine_in": "Dine In",
+    "takeaway": "Takeaway"
+  },
+  "table": {
+    "free": "Free",
+    "occupied": "Occupied",
+    "cleaning": "Cleaning",
+    "reserved": "Reserved"
+  },
+  "payment": {
+    "cash": "Cash",
+    "telebirr": "Telebirr",
+    "cbepay": "CBE Pay",
+    "card": "Card",
+    "pay": "Pay",
+    "total": "Total"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Create Account",
+    "logout": "Sign Out",
+    "pin_login": "PIN Login"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "syncing": "Syncing"
+  }
+}

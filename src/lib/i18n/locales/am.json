@@ -1,0 +1,50 @@
+{
+  "app": { "name": "ቅምሻ", "tagline": "ምግብ ቤትዎ፣ ሙሉ ለሙሉ ሥርዓቱ" },
+  "nav": {
+    "dashboard": "ዳሽቦርድ",
+    "orders": "ትዕዛዞች",
+    "tables": "ጠረጴዛዎች",
+    "menu": "ምናሌ",
+    "reports": "ሪፖርቶች",
+    "staff": "ሠራተኞች",
+    "cash": "ገንዘብ",
+    "settings": "ቅንብሮች"
+  },
+  "order": {
+    "new": "አዲስ ትዕዛዝ",
+    "open": "ክፍት",
+    "in_kitchen": "በኩሽና",
+    "ready": "ዝግጁ",
+    "served": "ተሰጥቷል",
+    "paid": "ተከፍሏል",
+    "cancelled": "ተሰርዟል",
+    "send_to_kitchen": "ወደ ኩሽና ላክ",
+    "dine_in": "ዕራፍ",
+    "takeaway": "ይዘህ ሂድ"
+  },
+  "table": {
+    "free": "ነፃ",
+    "occupied": "የተያዘ",
+    "cleaning": "እየተጸዳ",
+    "reserved": "ተይዟል"
+  },
+  "payment": {
+    "cash": "ናቅፋ",
+    "telebirr": "ቴሌቢር",
+    "cbepay": "ሲቢኢ ፔይ",
+    "card": "ካርድ",
+    "pay": "ክፈል",
+    "total": "ጠቅላላ"
+  },
+  "auth": {
+    "login": "ግባ",
+    "register": "ሂሳብ ክፈት",
+    "logout": "ውጣ",
+    "pin_login": "PIN ግባ"
+  },
+  "status": {
+    "online": "ኦንላይን",
+    "offline": "ኦፍላይን",
+    "syncing": "እየተሳካ..."
+  }
+}
