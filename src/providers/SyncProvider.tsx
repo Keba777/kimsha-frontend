@@ -2,10 +2,12 @@
 
 import { useEffect } from 'react'
 import { useSyncStore } from '@/store/sync.store'
+import { useAuthStore } from '@/store/auth.store'
 import { runSync } from '@/lib/sync/engine'
 
 export function SyncProvider({ children }: { children: React.ReactNode }) {
   const { setOnline, setSyncing, setLastSync } = useSyncStore()
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
   useEffect(() => {
     const onOnline = () => {
@@ -18,7 +20,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('offline', onOffline)
     setOnline(navigator.onLine)
 
-    // Sync on mount if online
+    // Sync on mount if online and authenticated
     if (navigator.onLine) doSync()
 
     // Background sync every 30s
@@ -33,12 +35,13 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     }
 
     async function doSync() {
+      if (!isAuthenticated()) return
       setSyncing(true)
       await runSync()
       setSyncing(false)
       setLastSync(new Date().toISOString())
     }
-  }, [setOnline, setSyncing, setLastSync])
+  }, [setOnline, setSyncing, setLastSync, isAuthenticated])
 
   return <>{children}</>
 }

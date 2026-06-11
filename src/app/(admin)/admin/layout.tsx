@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Building2, LogOut } from 'lucide-react'
+import { useAuthStore } from '@/store/auth.store'
 import { cn } from '@/lib/utils/cn'
 
 const nav = [
@@ -13,10 +15,19 @@ const nav = [
 export default function AdminShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { user, token, logout } = useAuthStore()
+
+  useEffect(() => {
+    if (!token || user?.role !== 'super_admin') {
+      router.replace('/login')
+    }
+  }, [token, user, router])
+
+  if (!token || user?.role !== 'super_admin') return null
 
   function handleLogout() {
-    localStorage.removeItem('kimsha_admin_token')
-    router.push('/admin/login')
+    logout()
+    router.push('/login')
   }
 
   return (
