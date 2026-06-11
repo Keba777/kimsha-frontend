@@ -77,7 +77,7 @@ export default function SettingsPage() {
         </div>
         <Separator />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Name</Label>
             <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
@@ -88,7 +88,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Phone</Label>
             <Input value={form.phone} placeholder="+251..." onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
@@ -104,7 +104,7 @@ export default function SettingsPage() {
           <Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Tax Rate (%)</Label>
             <Input type="number" min="0" max="100" step="0.1"

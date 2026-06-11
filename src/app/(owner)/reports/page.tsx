@@ -85,8 +85,8 @@ export default function ReportsPage() {
       </div>
 
       {/* Date range for items + waiters */}
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <span className="font-medium">Range</span>
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="font-medium shrink-0">Range</span>
         <input type="date" value={from} max={to}
           onChange={e => setFrom(e.target.value)}
           className="border border-border rounded-xl px-3 py-1.5 bg-background" />
