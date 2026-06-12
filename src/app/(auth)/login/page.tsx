@@ -25,14 +25,15 @@ export default function LoginPage() {
       const res = await authApi.login(form)
       setAuth(res.token, res.user)
       const role = res.user.role
+      // Keep loading=true through the navigation so the button never flips back
       if (role === 'super_admin') router.push('/admin/dashboard')
       else if (role === 'kitchen') router.push('/kitchen/display')
       else if (role === 'waiter') router.push('/waiter/tables')
       else if (role === 'cashier') router.push('/cashier/checkout')
       else router.push('/dashboard')
+      // intentionally no setLoading(false) on success — page unmounts during redirect
     } catch {
       toast.error('Invalid email or password')
-    } finally {
       setLoading(false)
     }
   }

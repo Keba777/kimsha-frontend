@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Building2, LogOut, Menu, X } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
+import { useRoleGuard } from '@/lib/hooks/useRoleGuard'
 import { cn } from '@/lib/utils/cn'
 
 const nav = [
@@ -15,14 +16,11 @@ const nav = [
 export default function AdminShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, token, logout } = useAuthStore()
+  const { logout } = useAuthStore()
+  const { user, ready } = useRoleGuard(['super_admin'])
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  useEffect(() => {
-    if (!token || user?.role !== 'super_admin') router.replace('/login')
-  }, [token, user, router])
-
-  if (!token || user?.role !== 'super_admin') return null
+  if (!ready) return null
 
   function handleLogout() {
     logout()

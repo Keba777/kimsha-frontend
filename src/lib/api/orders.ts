@@ -2,7 +2,7 @@ import { api } from './client'
 import type { Order, OrderItem, OrderStatus, OrderItemStatus, OrderType } from '@/types/order'
 
 export const ordersApi = {
-  list: (params?: { status?: OrderStatus; page?: number; limit?: number }) =>
+  list: (params?: { status?: string; page?: number; limit?: number }) =>
     api.get<{ data: Order[]; meta: unknown }>('/orders', { params }).then(r => r.data),
 
   get: (id: string) =>

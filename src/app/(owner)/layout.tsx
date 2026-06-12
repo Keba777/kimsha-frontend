@@ -8,6 +8,7 @@ import {
   BarChart3, Users, Wallet, Settings, LogOut, Menu, X
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
+import { useRoleGuard } from '@/lib/hooks/useRoleGuard'
 import { SyncIndicator } from '@/components/layout/SyncIndicator'
 import { OfflineBanner } from '@/components/pwa/OfflineBanner'
 import { cn } from '@/lib/utils/cn'
@@ -29,8 +30,11 @@ const bottomNav = nav.slice(0, 4)
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, logout } = useAuthStore()
+  const { logout } = useAuthStore()
+  const { user, ready } = useRoleGuard(['owner', 'manager'])
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  if (!ready) return null
 
   function handleLogout() {
     logout()

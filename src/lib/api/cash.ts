@@ -1,10 +1,15 @@
 import { api } from './client'
-import type { CashTransaction } from '@/types/payment'
+import type { CashTransaction, Payment } from '@/types/payment'
 
 const unwrap = <T>(p: Promise<{ data: { data: T } }>) => p.then(r => r.data.data)
 
 export const cashApi = {
   summary: () => unwrap<CashTransaction[]>(api.get('/cash/summary')),
+
+  // Today's payments — used to derive cash sales total on the cash page
+  paymentsToday: () =>
+    api.get<{ data: Payment[] }>('/payments').then(r => r.data.data ?? []),
+
   openShift: (amount: number, note?: string) =>
     unwrap<CashTransaction>(api.post('/cash/open', { amount, note })),
   closeShift: (amount: number, note?: string) =>

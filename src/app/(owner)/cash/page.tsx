@@ -11,24 +11,44 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ArrowDownLeft, ArrowUpRight, Wallet, Lock, Unlock } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, Wallet, Lock, Unlock, ShoppingBag, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 type TxAction = 'open' | 'close' | 'in' | 'out'
 
 const txTypeColors: Record<string, string> = {
-  open: 'text-blue-600',
-  close: 'text-slate-500',
-  in: 'text-green-600',
-  out: 'text-red-500',
+  open:   'text-blue-600',
+  close:  'text-slate-500',
+  in:     'text-green-600',
+  out:    'text-red-500',
+  sale:   'text-emerald-600',
+  refund: 'text-orange-500',
+}
+
+const txTypeLabels: Record<string, string> = {
+  open:   'Open Shift',
+  close:  'Close Shift',
+  in:     'Cash In',
+  out:    'Cash Out',
+  sale:   'Sale',
+  refund: 'Refund',
 }
 
 const txTypeIcons: Record<string, React.ElementType> = {
-  open: Unlock,
-  close: Lock,
-  in: ArrowDownLeft,
-  out: ArrowUpRight,
+  open:   Unlock,
+  close:  Lock,
+  in:     ArrowDownLeft,
+  out:    ArrowUpRight,
+  sale:   ShoppingBag,
+  refund: RotateCcw,
 }
+
+// Manual register operations only (sales come from payments table)
+const isManualInflow  = (type: string) => ['open', 'in'].includes(type)
+const isManualOutflow = (type: string) => ['close', 'out', 'refund'].includes(type)
+// All inflows including sale (used only for the transaction log colouring)
+const isInflow  = (type: string) => ['open', 'in', 'sale'].includes(type)
+const isOutflow = isManualOutflow
 
 export default function CashPage() {
   const qc = useQueryClient()
@@ -39,6 +59,12 @@ export default function CashPage() {
   const { data: transactions = [] } = useQuery<CashTransaction[]>({
     queryKey: ['cash-summary'],
     queryFn: cashApi.summary,
+    refetchInterval: 30_000,
+  })
+
+  const { data: paymentsToday = [] } = useQuery({
+    queryKey: ['payments-today'],
+    queryFn: cashApi.paymentsToday,
     refetchInterval: 30_000,
   })
 
@@ -62,9 +88,17 @@ export default function CashPage() {
     onError: () => toast.error('Transaction failed'),
   })
 
-  const balance = transactions.length > 0 ? transactions[transactions.length - 1].balance : 0
-  const totalIn = transactions.filter(t => t.type === 'in' || t.type === 'open').reduce((s, t) => s + t.amount, 0)
-  const totalOut = transactions.filter(t => t.type === 'out' || t.type === 'close').reduce((s, t) => s + t.amount, 0)
+  // Manual register in/out (opening float, petty cash, etc.)
+  const totalManualIn  = transactions.filter(t => isManualInflow(t.type)).reduce((s, t) => s + t.amount, 0)
+  const totalManualOut = transactions.filter(t => isManualOutflow(t.type)).reduce((s, t) => s + t.amount, 0)
+
+  // Cash sales = all payments made with cash today (authoritative source)
+  const totalSales = paymentsToday
+    .filter(p => p.method === 'cash' && p.status === 'completed')
+    .reduce((s, p) => s + p.amount, 0)
+
+  // Balance = opening float + cash sales + manual cash-ins − manual cash-outs
+  const balance = totalManualIn + totalSales - totalManualOut
 
   return (
     <div className="space-y-6">
@@ -74,12 +108,13 @@ export default function CashPage() {
       <div className="card-kimsha bg-primary text-primary-foreground">
         <div className="flex items-center gap-3 mb-4">
           <Wallet className="w-6 h-6" />
-          <span className="font-semibold">Today's Register</span>
+          <span className="font-semibold">Today's Register · ዛሬ ሂሳብ</span>
         </div>
         <p className="text-4xl font-black">{formatETB(balance)}</p>
-        <div className="flex gap-6 mt-4 text-sm opacity-80">
-          <span>In: {formatETB(totalIn)}</span>
-          <span>Out: {formatETB(totalOut)}</span>
+        <div className="flex flex-wrap gap-4 mt-4 text-sm opacity-80">
+          <span>Float/In: {formatETB(totalManualIn)}</span>
+          <span>Sales: {formatETB(totalSales)}</span>
+          <span>Out: {formatETB(totalManualOut)}</span>
         </div>
       </div>
 
@@ -115,14 +150,21 @@ export default function CashPage() {
                 <div key={tx.id} className="flex items-center gap-3 py-3">
                   <Icon className={cn('w-4 h-4 shrink-0', txTypeColors[tx.type])} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium capitalize">{tx.type}</p>
+                    <p className={cn('text-sm font-medium', txTypeColors[tx.type])}>
+                      {txTypeLabels[tx.type] ?? tx.type}
+                    </p>
                     {tx.note && <p className="text-xs text-muted-foreground truncate">{tx.note}</p>}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className={cn('text-sm font-bold', tx.type === 'out' || tx.type === 'close' ? 'text-red-500' : 'text-green-600')}>
-                      {tx.type === 'out' || tx.type === 'close' ? '-' : '+'}{formatETB(tx.amount)}
+                    <p className={cn('text-sm font-bold', isInflow(tx.type) ? 'text-green-600' : 'text-red-500')}>
+                      {isInflow(tx.type) ? '+' : '-'}{formatETB(tx.amount)}
                     </p>
-                    <p className="text-xs text-muted-foreground">{formatTime(tx.created_at)}</p>
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <p className="text-xs text-muted-foreground">{formatTime(tx.created_at)}</p>
+                      {tx.balance !== undefined && (
+                        <p className="text-xs text-muted-foreground">· {formatETB(tx.balance)}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               )

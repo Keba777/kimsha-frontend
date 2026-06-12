@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { kitchenApi, createKitchenWS } from '@/lib/api/kitchen'
 import type { KitchenTicket, TicketStatus } from '@/types/kitchen'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -45,17 +45,19 @@ function TicketCard({ ticket }: { ticket: KitchenTicket }) {
         {ticket.status === 'queued' && (
           <button
             onClick={() => update.mutate('cooking')}
-            className="flex-1 bg-amber-500 text-white rounded-2xl py-3 font-bold text-sm transition-all active:scale-95"
+            disabled={update.isPending}
+            className="flex-1 bg-amber-500 text-white rounded-2xl py-3 font-bold text-sm transition-all active:scale-95 disabled:opacity-50"
           >
-            Start Cooking
+            Start Cooking · ማብሰል ጀምር
           </button>
         )}
         {ticket.status === 'cooking' && (
           <button
             onClick={() => update.mutate('done')}
-            className="flex-1 btn-accent"
+            disabled={update.isPending}
+            className="flex-1 btn-accent disabled:opacity-50"
           >
-            Done ✓
+            Done ✓ · ተጠናቀቀ
           </button>
         )}
       </div>
@@ -65,7 +67,7 @@ function TicketCard({ ticket }: { ticket: KitchenTicket }) {
 
 export default function KitchenDisplayPage() {
   const qc = useQueryClient()
-  const { data: tickets = [] } = useQuery({
+  const { data: tickets = [], isError, isLoading } = useQuery({
     queryKey: ['kitchen-tickets'],
     queryFn: kitchenApi.activeTickets,
     refetchInterval: 5_000,
@@ -74,32 +76,43 @@ export default function KitchenDisplayPage() {
   useEffect(() => {
     const ws = createKitchenWS('')
     ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data)
-      if (msg.type === 'new_ticket' || msg.type === 'ticket_updated') {
-        qc.invalidateQueries({ queryKey: ['kitchen-tickets'] })
-      }
+      try {
+        const msg = JSON.parse(e.data)
+        if (msg.type === 'new_ticket' || msg.type === 'ticket_updated') {
+          qc.invalidateQueries({ queryKey: ['kitchen-tickets'] })
+        }
+      } catch { /* ignore malformed messages */ }
     }
     return () => ws.close()
   }, [qc])
 
-  const queued = (tickets as KitchenTicket[]).filter(t => t.status === 'queued')
+  const queued  = (tickets as KitchenTicket[]).filter(t => t.status === 'queued')
   const cooking = (tickets as KitchenTicket[]).filter(t => t.status === 'cooking')
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black">Kitchen · ኩሽና</h1>
+        <h1 className="text-2xl font-black">Display · ማሳያ</h1>
         <div className="flex gap-3 text-sm">
           <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-semibold">
-            {queued.length} queued
+            {queued.length} queued · ተሰልፈዋል
           </span>
           <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">
-            {cooking.length} cooking
+            {cooking.length} cooking · እየተዘጋጀ
           </span>
         </div>
       </div>
 
-      {tickets.length === 0 ? (
+      {isLoading ? (
+        <div className="card-kimsha text-center py-20 text-muted-foreground">
+          <p className="text-lg font-semibold">Loading tickets…</p>
+        </div>
+      ) : isError ? (
+        <div className="card-kimsha text-center py-20 text-destructive">
+          <p className="text-lg font-semibold">Failed to load tickets</p>
+          <p className="text-sm mt-1 text-muted-foreground">Check your connection and try refreshing</p>
+        </div>
+      ) : tickets.length === 0 ? (
         <div className="card-kimsha text-center py-20 text-muted-foreground">
           <p className="text-2xl font-black mb-2">Kitchen Clear ✓</p>
           <p className="text-sm">ምንም ትዕዛዝ የለም · No pending orders</p>
